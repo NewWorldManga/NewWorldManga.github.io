@@ -27,20 +27,26 @@ jobs:
           test -f "MangaGoAtlas-Site-No-Chapters (5).zip"
           rm -rf /tmp/mangago-src _site
           mkdir -p /tmp/mangago-src _site
-          unzip -q "MangaGoAtlas-Site-No-Chapters (5).zip" -d /tmp/mangago-src
 
-          if [ -f /tmp/mangago-src/MangaGoAtlas/index.html ]; then
-            cp -a /tmp/mangago-src/MangaGoAtlas/. _site/
-          elif [ -f /tmp/mangago-src/index.html ]; then
-            cp -a /tmp/mangago-src/. _site/
+          # Prefer the maintained, edited website files in the repository.
+          # Fall back to the ZIP only if the extracted site directory is absent.
+          if [ -f extracted/MangaGoAtlas/index.html ]; then
+            cp -a extracted/MangaGoAtlas/. _site/
           else
-            index_file="$(find /tmp/mangago-src -mindepth 2 -maxdepth 4 -type f -name index.html ! -path '*/admin/*' -print -quit)"
-            if [ -z "$index_file" ]; then
-              echo "Could not find the website's main index.html in the ZIP."
-              find /tmp/mangago-src -maxdepth 4 -type f | head -100
-              exit 1
+            unzip -q "MangaGoAtlas-Site-No-Chapters (5).zip" -d /tmp/mangago-src
+            if [ -f /tmp/mangago-src/MangaGoAtlas/index.html ]; then
+              cp -a /tmp/mangago-src/MangaGoAtlas/. _site/
+            elif [ -f /tmp/mangago-src/index.html ]; then
+              cp -a /tmp/mangago-src/. _site/
+            else
+              index_file="$(find /tmp/mangago-src -mindepth 2 -maxdepth 4 -type f -name index.html ! -path '*/admin/*' -print -quit)"
+              if [ -z "$index_file" ]; then
+                echo "Could not find the website's main index.html in the ZIP."
+                find /tmp/mangago-src -maxdepth 4 -type f | head -100
+                exit 1
+              fi
+              cp -a "$(dirname "$index_file")/." _site/
             fi
-            cp -a "$(dirname "$index_file")/." _site/
           fi
 
           touch _site/.nojekyll
