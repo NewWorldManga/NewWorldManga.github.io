@@ -1,4 +1,4 @@
-# MangaAtlas
+# NEWMANGAWORLD
 
 Global manga discovery platform for Japan, USA, France and Brazil.
 
@@ -20,4 +20,4 @@ Global manga discovery platform for Japan, USA, France and Brazil.
 ## Content model
 Manga records support title, native title, author, artist, description, cover, country, language, genres, status, release date and official URL. News and publisher tables are also included for the next development phase.
 
-MangaAtlas is intended for lawful manga discovery, news, metadata and official reading/purchase links; it does not provide unauthorized manga scans.
+NEWMANGAWORLD is intended for lawful manga discovery, news, metadata and official reading/purchase links; it does not provide unauthorized manga scans.
