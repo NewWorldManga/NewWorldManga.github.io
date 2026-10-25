@@ -1,0 +1,66 @@
+name: Fix MangaGoAtlas Admin and Ads
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-admin-ads.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix admin repository/token and disable ads
+        shell: bash
+        run: |
+          set -e
+          for f in admin/index.html admin/manga.html admin/chapters.html admin/ads.html admin/ads-v3.html; do
+            [ -f "$f" ] || continue
+            sed -i \
+              -e 's/MangaAtlas/MangaGoAtlas/g' \
+              -e 's/mangaatlas\\.github\\.io/MangaGoAtlas.github.io/g' \
+              -e 's/mangaatlas_github_token/mangogoatlas_github_token/g' \
+              "$f"
+          done
+
+          for f in ads.js ads-system.js; do
+            [ -f "$f" ] || continue
+            cat > "$f" <<'EOF'
+/* MangaGoAtlas Ads — disabled site-wide. Configuration is retained for future manual use. */
+(function(){
+  'use strict';
+  window.MANGOGOATLAS_ADS_ENABLED = false;
+})();
+EOF
+          done
+
+          python3 - <<'PY'
+          import json
+          p='data/ads-config.json'
+          with open(p,encoding='utf-8') as f:
+              d=json.load(f)
+          for section in d.get('sections',[]):
+              section['enabled']=False
+          with open(p,'w',encoding='utf-8') as f:
+              json.dump(d,f,ensure_ascii=False,indent=2)
+              f.write('\n')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin/index.html admin/manga.html admin/chapters.html admin/ads.html admin/ads-v3.html ads.js ads-system.js data/ads-config.json
+          if git diff --cached --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git commit -m "Fix MangaGoAtlas admin and disable ads"
+          git push

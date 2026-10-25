@@ -1,0 +1,63 @@
+name: Extract site files from ZIP
+
+on:
+  push:
+    paths:
+      - 'Mangareader-final.zip'
+      - '.github/workflows/extract-nonimage-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract non-image files only
+        shell: bash
+        run: |
+          set -e
+          rm -rf _mangareader_extract
+          mkdir -p _mangareader_extract
+          unzip -q Mangareader-final.zip -d _mangareader_extract
+
+          ROOT="_mangareader_extract/Mangareader"
+          if [ ! -d "$ROOT" ]; then
+            ROOT="_mangareader_extract"
+          fi
+
+          find "$ROOT" -type f \
+            ! -iname '*.jpg' \
+            ! -iname '*.jpeg' \
+            ! -iname '*.png' \
+            ! -iname '*.webp' \
+            ! -iname '*.gif' \
+            ! -iname '*.avif' \
+            -print0 | while IFS= read -r -d '' file; do
+              rel="${file#"$ROOT/"}"
+              # The GitHub App cannot push new workflow files without workflows permission.
+              # Keep the repository's existing workflow and skip workflow files from the ZIP.
+              case "$rel" in
+                .github/workflows/*) continue ;;
+              esac
+              mkdir -p "$(dirname "$rel")"
+              cp -f "$file" "$rel"
+            done
+
+          rm -rf _mangareader_extract
+
+      - name: Commit extracted files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Extract non-image MangaGoAtlas site files"
+          git push
+
+# Re-run trigger: 2026-09-17T17:20:00Z
