@@ -32,7 +32,6 @@ jobs:
           rsync -a \
             --exclude='.git' \
             --exclude='.github' \
-            --exclude='extracted' \
             --exclude='MangaGoAtlas-Site-No-Chapters (5).zip' \
             ./ _site/
 
