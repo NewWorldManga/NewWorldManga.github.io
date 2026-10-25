@@ -1,5 +1,5 @@
 (function(){
-  var MEASUREMENT_ID='G-DWTESS8CF2';
+  var MEASUREMENT_ID='G-THRZ21XWKJ';
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
   gtag('js',new Date());
